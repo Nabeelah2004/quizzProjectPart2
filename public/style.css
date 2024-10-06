@@ -20,6 +20,15 @@
     align-items: center; /* Vertically centers the content */
     background-color: hsl(var(--hue), 100%, 20%); /* Sets background color based on the hue variable */
   }
+  .explanation {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+  }
   
   body.correct {
     --hue: var(--hue-correct); /* Changes hue to green when correct class is added */

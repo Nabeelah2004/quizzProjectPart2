@@ -92,44 +92,61 @@ function resetState() {
 // Function to handle answer selection
 function selectAnswer(e) {
   const selectedButton = e.target;
-  const correct = selectedButton.dataset.correct;
+  const correct = selectedButton.dataset.correct === "true"; // Ensure it's a boolean
+  const currentQuestion = shuffledQuestions[currentQuestionIndex]; // Get current question
 
-  // Play the correct or wrong sound based on the answer
-  if (correct) {
-    correctSound.play(); // Play sound for correct answer
-    score++; // Increase score for correct answer
-  } else {
-    wrongSound.play(); // Play sound for wrong answer
-  }
-
-  // Set classes for correct or wrong answer immediately
   setStatusClass(document.body, correct);
   Array.from(answerButtonsElement.children).forEach(button => {
-    setStatusClass(button, button.dataset.correct);
+    setStatusClass(button, button.dataset.correct === "true");
   });
 
-  // Determine sound duration (correct or wrong)
-  const soundDuration = correct ? correctSound.duration : wrongSound.duration;
-  
-  // If sound duration is not valid, use a default delay of 1 second
-  const delay = soundDuration ? soundDuration * 1000 : 1000;
+  // If correct answer, increase the score and play correct sound
+  if (correct) {
+    score++;
+    playCorrectSound();
+  } else {
+    // If wrong, play wrong sound and show explanation
+    playWrongSound();
+    displayExplanation(currentQuestion.explanation); // Display explanation for wrong answers
+  }
 
-  // Hide the Next button initially
-  nextButton.classList.add('hide');
-
-  // Delay showing the next button until after the sound has played
+  // Show next button after sound has finished playing
+  const soundDuration = correct ? correctSound.duration * 1000 : wrongSound.duration * 1000;
   setTimeout(() => {
     if (shuffledQuestions.length > currentQuestionIndex + 1) {
-      nextButton.classList.remove('hide');  // Show Next button after delay
+      nextButton.classList.remove('hide');
     } else {
-      saveScore(); // Save score when quiz ends
+      saveScore();
       startButton.innerText = 'Restart';
       startButton.classList.remove('hide');
-      viewScoreButton.classList.remove('hide'); // Show the view score button
+      viewScoreButton.classList.remove('hide');
     }
-  }, delay);  // Delay by the length of the sound in milliseconds
+  }, soundDuration); // Delay showing "Next" button until sound finishes
 }
 
+// Function to display explanation
+function displayExplanation(explanation) {
+  // Create an explanation element or use a modal
+  const explanationElement = document.createElement('div');
+  explanationElement.innerText = explanation;
+  explanationElement.classList.add('explanation');
+  document.body.appendChild(explanationElement);
+
+  // Optionally hide the explanation after a certain amount of time or user interaction
+  setTimeout(() => {
+    explanationElement.remove(); // Remove after a few seconds
+  }, 10000); 
+}
+
+// Function to play correct sound
+function playCorrectSound() {
+  correctSound.play();
+}
+
+// Function to play wrong sound
+function playWrongSound() {
+  wrongSound.play();
+}
 
 // Function to save score and username to localStorage
 async function saveScore() {
