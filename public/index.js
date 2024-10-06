@@ -7,6 +7,11 @@ const nameFormContainer = document.getElementById('name-form-container')
 const submitNameButton = document.getElementById('submit-name-btn')
 const viewScoreButton = document.getElementById('view-score-btn')
 const nameInput = document.getElementById('name')
+const correctSound = new Audio('sounds/correct.mp3');
+const wrongSound = new Audio('sounds/wrong.mp3');
+correctSound.volume = 0.5; // 50% volume
+wrongSound.volume = 0.5;   // 50% volume
+
 
 let shuffledQuestions, currentQuestionIndex, score = 0, userName = ''
 
@@ -86,27 +91,45 @@ function resetState() {
 
 // Function to handle answer selection
 function selectAnswer(e) {
-  const selectedButton = e.target
-  const correct = selectedButton.dataset.correct
-  setStatusClass(document.body, correct)
-  Array.from(answerButtonsElement.children).forEach(button => {
-    setStatusClass(button, button.dataset.correct)
-  })
+  const selectedButton = e.target;
+  const correct = selectedButton.dataset.correct;
 
-  // If correct answer, increase the score
+  // Play the correct or wrong sound based on the answer
   if (correct) {
-    score++
-  }
- 
-  if (shuffledQuestions.length > currentQuestionIndex + 1) {
-    nextButton.classList.remove('hide')
+    correctSound.play(); // Play sound for correct answer
+    score++; // Increase score for correct answer
   } else {
-    saveScore() // Save score to localStorage when quiz ends
-    startButton.innerText = 'Restart'
-    startButton.classList.remove('hide')
-    viewScoreButton.classList.remove('hide') // Show the view score button
+    wrongSound.play(); // Play sound for wrong answer
   }
+
+  // Set classes for correct or wrong answer immediately
+  setStatusClass(document.body, correct);
+  Array.from(answerButtonsElement.children).forEach(button => {
+    setStatusClass(button, button.dataset.correct);
+  });
+
+  // Determine sound duration (correct or wrong)
+  const soundDuration = correct ? correctSound.duration : wrongSound.duration;
+  
+  // If sound duration is not valid, use a default delay of 1 second
+  const delay = soundDuration ? soundDuration * 1000 : 1000;
+
+  // Hide the Next button initially
+  nextButton.classList.add('hide');
+
+  // Delay showing the next button until after the sound has played
+  setTimeout(() => {
+    if (shuffledQuestions.length > currentQuestionIndex + 1) {
+      nextButton.classList.remove('hide');  // Show Next button after delay
+    } else {
+      saveScore(); // Save score when quiz ends
+      startButton.innerText = 'Restart';
+      startButton.classList.remove('hide');
+      viewScoreButton.classList.remove('hide'); // Show the view score button
+    }
+  }, delay);  // Delay by the length of the sound in milliseconds
 }
+
 
 // Function to save score and username to localStorage
 async function saveScore() {
